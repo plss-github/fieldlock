@@ -1,0 +1,40 @@
+/* Field Lock - how a locked field looks to the end user. */
+
+.fieldlock-locked {
+    position: relative;
+    background-color: var(--tblr-bg-surface-secondary, #f1f3f5);
+    border-radius: 4px;
+    opacity: .85;
+}
+
+.fieldlock-locked label,
+.fieldlock-locked .col-form-label {
+    color: var(--tblr-secondary, #6c757d) !important;
+}
+
+.fieldlock-locked-input,
+.fieldlock-locked input,
+.fieldlock-locked select,
+.fieldlock-locked textarea,
+.fieldlock-locked .select2-selection {
+    background-color: var(--tblr-bg-surface-secondary, #e9ecef) !important;
+    color: var(--tblr-secondary, #6c757d) !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    box-shadow: none !important;
+}
+
+/* select2 renders its own widget next to the (now disabled) native control. */
+.fieldlock-locked .select2-container {
+    pointer-events: none;
+    opacity: .7;
+}
+
+.fieldlock-locked .select2-selection__clear,
+.fieldlock-locked .select2-selection__arrow {
+    display: none !important;
+}
+
+.fieldlock-hidden {
+    display: none !important;
+}

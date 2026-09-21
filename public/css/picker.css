@@ -1,0 +1,245 @@
+/* Field Lock - configuration screen and in-iframe picker. */
+
+/* ------------------------------------------------- parent (config page) --- */
+
+/* Small print on the config screen.
+
+   Deliberately not Bootstrap's `.small`: GLPI 10's palettes ship
+   `#page .small, .qtip .small, .modal .modal-body .small { width: 1%; }`,
+   which collapses any `.small` on a GLPI page to a few pixels wide. */
+.fieldlock-hint,
+.fieldlock-status {
+    display: inline-block;
+    width: auto;
+    font-size: .75rem;
+    line-height: 1.4;
+}
+
+.fieldlock-hint {
+    color: var(--tblr-secondary, #6c757d);
+}
+
+.fieldlock-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+}
+
+.fieldlock-frame-wrap {
+    height: 70vh;
+    min-height: 420px;
+    background: var(--tblr-bg-surface-secondary, #f8f9fa);
+}
+
+.fieldlock-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+/* --------------------------------------------------- inside the iframe --- */
+
+/* Strip the chrome so only the form is left to click on.
+
+   `.card-footer` is deliberately NOT in this list: GLPI puts that class on
+   `.itil-right-side`, the panel holding a ticket's status, urgency, priority
+   and SLA fields, so hiding it would hide exactly the fields worth locking. */
+.fieldlock-pick-mode .navbar,
+.fieldlock-pick-mode .page-header,
+.fieldlock-pick-mode footer,
+.fieldlock-pick-mode #footer,
+.fieldlock-pick-mode .form-buttons,
+.fieldlock-pick-mode #itil-footer,
+.fieldlock-pick-mode #tabspanel {
+    display: none !important;
+}
+
+/* Reclaim the width the left tab rail was using. */
+.fieldlock-pick-mode .itil-left-side,
+.fieldlock-pick-mode .itil-right-side {
+    padding-left: .5rem !important;
+    padding-right: .5rem !important;
+}
+
+.fieldlock-pick-mode {
+    cursor: crosshair;
+}
+
+.fieldlock-pick-target {
+    position: relative;
+    outline: 1px dashed rgba(32, 107, 196, .35);
+    outline-offset: 2px;
+    border-radius: 4px;
+    transition: background-color .12s ease, outline-color .12s ease;
+}
+
+/* The real control must never take the click; the wrapper handles it. */
+.fieldlock-pick-target input,
+.fieldlock-pick-target select,
+.fieldlock-pick-target textarea,
+.fieldlock-pick-target .select2-container,
+.fieldlock-pick-target button,
+.fieldlock-pick-target a {
+    pointer-events: none !important;
+}
+
+.fieldlock-pick-target:hover {
+    background-color: rgba(32, 107, 196, .08);
+    outline-color: rgba(32, 107, 196, .9);
+}
+
+.fieldlock-pick-badge {
+    position: absolute;
+    top: -.55rem;
+    right: .25rem;
+    z-index: 5;
+    padding: 0 .3rem;
+    border-radius: 3px;
+    font-size: .625rem;
+    font-family: monospace;
+    line-height: 1.4;
+    color: #fff;
+    background: #206bc4;
+    opacity: 0;
+    transition: opacity .12s ease;
+    pointer-events: none;
+}
+
+.fieldlock-pick-target:hover .fieldlock-pick-badge {
+    opacity: 1;
+}
+
+/* Locked for every selected profile. */
+.fieldlock-pick-target.fieldlock-pick-on {
+    background-color: rgba(108, 117, 125, .18);
+    outline: 2px solid #6c757d;
+}
+
+.fieldlock-pick-target.fieldlock-pick-on input,
+.fieldlock-pick-target.fieldlock-pick-on select,
+.fieldlock-pick-target.fieldlock-pick-on textarea,
+.fieldlock-pick-target.fieldlock-pick-on .select2-selection {
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+}
+
+.fieldlock-pick-target.fieldlock-pick-on .fieldlock-pick-badge {
+    opacity: 1;
+    background: #6c757d;
+}
+
+/* Locked for only some of the selected profiles. */
+.fieldlock-pick-target.fieldlock-pick-partial {
+    outline: 2px dashed #f59f00;
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(245, 159, 0, .10),
+        rgba(245, 159, 0, .10) 6px,
+        transparent 6px,
+        transparent 12px
+    );
+}
+
+.fieldlock-pick-target.fieldlock-pick-partial .fieldlock-pick-badge {
+    opacity: 1;
+    background: #f59f00;
+}
+
+/* Give the preview the full iframe width: the surrounding GLPI chrome is
+   hidden, so its layout offsets would otherwise leave a large empty gutter. */
+.fieldlock-pick-mode .sidebar,
+.fieldlock-pick-mode aside,
+.fieldlock-pick-mode .toast-container {
+    display: none !important;
+}
+
+.fieldlock-pick-mode #page,
+.fieldlock-pick-mode .page-wrapper,
+.fieldlock-pick-mode .page {
+    margin-left: 0 !important;
+    padding-left: .75rem !important;
+    padding-right: .75rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* A field belonging to another itemtype rendered inside this form: an
+   ITILFollowup or TicketTask field inside a Ticket's timeline, for example.
+   Still clickable - it just saves under its own itemtype. */
+.fieldlock-pick-target.fieldlock-pick-foreign {
+    outline-style: dotted;
+    outline-color: rgba(130, 80, 223, .55);
+}
+
+.fieldlock-pick-target.fieldlock-pick-foreign:hover {
+    background-color: rgba(130, 80, 223, .08);
+    outline-color: rgba(130, 80, 223, .95);
+}
+
+.fieldlock-pick-target.fieldlock-pick-foreign .fieldlock-pick-badge {
+    background: #8250df;
+}
+
+
+/* ------------------------------------------------------- isolate mode --- */
+
+/* Followups, tasks, solutions and approvals are previewed through their parent
+   ticket, which also renders its own form and the whole timeline. When one of
+   them is the itemtype being configured, everything else is noise: show only
+   that block, expanded. */
+
+.fieldlock-pick-mode[data-fieldlock-isolate] .timeline-item,
+.fieldlock-pick-mode[data-fieldlock-isolate] .itil-right-side,
+.fieldlock-pick-mode[data-fieldlock-isolate] .timeline-header,
+.fieldlock-pick-mode[data-fieldlock-isolate] .itil-tabs,
+.fieldlock-pick-mode[data-fieldlock-isolate] .navigationheader {
+    display: none !important;
+}
+
+.fieldlock-pick-mode[data-fieldlock-isolate] .timeline-item.fieldlock-isolated {
+    display: block !important;
+    margin-left: 0 !important;
+    max-width: 100% !important;
+}
+
+.fieldlock-pick-mode[data-fieldlock-isolate] .itil-left-side {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+}
+
+/* Trim what is left of the timeline wrapper around the isolated form: the
+   author avatar and the "close answer" button belong to the timeline UI, not
+   to the form being configured. */
+.fieldlock-pick-mode[data-fieldlock-isolate] .fieldlock-isolated .avatar,
+.fieldlock-pick-mode[data-fieldlock-isolate] .fieldlock-isolated .close-itil-answer {
+    display: none !important;
+}
+
+/* The timeline indents answers to the right; isolated, the form should simply
+   use the width it has. */
+.fieldlock-pick-mode[data-fieldlock-isolate] .fieldlock-isolated > .row > .content-part,
+.fieldlock-pick-mode[data-fieldlock-isolate] .fieldlock-isolated > .row > [class*="col-"] {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+}
+
+.fieldlock-pick-mode[data-fieldlock-isolate] .fieldlock-isolated .timeline-content {
+    margin-top: 0 !important;
+}
+
+/* The speech-bubble arrow has no meaning outside the timeline. */
+.fieldlock-pick-mode[data-fieldlock-isolate] .fieldlock-isolated .timeline-content::before,
+.fieldlock-pick-mode[data-fieldlock-isolate] .fieldlock-isolated .timeline-content::after {
+    display: none !important;
+}
+
+/* Timeline forms label their fields with icons only, so in isolate mode the
+   name badge is the only way to tell them apart: keep it on permanently. */
+.fieldlock-pick-mode[data-fieldlock-isolate] .fieldlock-isolated .fieldlock-pick-badge {
+    opacity: 1;
+    top: -.4rem;
+    left: .25rem;
+    right: auto;
+}
