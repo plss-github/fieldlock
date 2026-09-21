@@ -199,6 +199,55 @@ shows the form unlocked.
 GLPI renders timelines, tabs and accordions after `load`, so the picker rescans
 on a debounced `MutationObserver` rather than once.
 
+## Translations
+
+Gettext catalogs live in `locales/`, under the `fieldlock` domain:
+
+| File | What it is |
+| --- | --- |
+| `fieldlock.pot` | Template, regenerated from the source — never translated directly |
+| `pt_BR.po` | Brazilian Portuguese, the editable catalog |
+| `pt_BR.mo` | Compiled; **this is the file GLPI loads** |
+
+GLPI resolves the catalog through `Plugin::loadLang()`, which looks for
+`locales/<lang>.mo` using the filename in `$CFG_GLPI['languages']`, falling
+back to `en_GB.mo` and then to the untranslated msgid. English therefore needs
+no catalog of its own.
+
+To regenerate after changing or adding strings:
+
+```bash
+./tools/update-locales.sh
+```
+
+It extracts with `xgettext`, merges into every existing `.po` with `msgmerge`
+(keeping current translations and flagging changed ones as fuzzy), and compiles
+the `.mo` files. Adding a language is one command plus a translation pass:
+
+```bash
+msginit --input=locales/fieldlock.pot --locale=es_ES --output=locales/es_ES.po
+./tools/update-locales.sh
+```
+
+### What is deliberately not translated
+
+- **Tab group labels** (`Assistance`, `Assets`, `Management`, `Tools`,
+  `Administration`) are called as `__('Assets')` with **no domain**, so they
+  resolve against GLPI's own catalog and are already translated in every
+  language GLPI ships. `update-locales.sh` filters them out of the template;
+  the `CORE_STRINGS` pattern there must stay in sync with
+  `PluginFieldlockLock::getItemtypeGroups()`.
+- **Itemtype names on the pills** (Ticket, Change, …) come from
+  `$itemtype::getTypeName()`, i.e. from core.
+- **The plugin name in `setup.php`.** GLPI writes it into `glpi_plugins.name`
+  at install time, so a translated value would freeze whatever language the
+  installing administrator happened to be using and show it to everyone. The
+  configuration page translates its own title instead, per request.
+
+Strings shown by JavaScript are passed from PHP in the `i18n` block of the
+config payload, so there is nothing to extract from the `.js` files — and
+nothing that can drift out of the catalog.
+
 ## Caveats
 
 - **Do not lock fields for a profile you administer with.** Locks apply to the

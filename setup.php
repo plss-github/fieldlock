@@ -51,6 +51,10 @@ function plugin_init_fieldlock()
 function plugin_version_fieldlock()
 {
     return [
+        // Deliberately not translated: GLPI persists this into
+        // `glpi_plugins.name` at install time, so a translated value would
+        // freeze whatever language the installing admin happened to use and
+        // show it to everyone. The configuration page translates its own title.
         'name'         => 'Field Lock',
         'version'      => PLUGIN_FIELDLOCK_VERSION,
         'author'       => 'Ampris',
